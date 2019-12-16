@@ -787,13 +787,11 @@ module.exports = function () {
             return date;
         },
         titleCase: function titleCase(name) {
-          if (name) {
-            name = name.toLowerCase().split(" ");
-            for (var i = 0; i < name.length; i++) {
-              name[i] = name[i].charAt(0).toUpperCase() + name[i].slice(1);
-            }
-            return name.join(" ");
+          name = name.toLowerCase().split(" ");
+          for (var i = 0; i < name.length; i++) {
+            name[i] = name[i].charAt(0).toUpperCase() + name[i].slice(1);
           }
+          return name.join(" ");
         }
     };
 
