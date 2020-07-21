@@ -1,37 +1,37 @@
-const authorizer = require("../../authorization/etl-authorizer");
+const authorizer = require('../../authorization/etl-authorizer');
 const privileges = authorizer.getAllPrivileges();
-import { getOncologyIntegratedProgramSnapshot } from "../../service/oncology/patient-oncology-summary-service";
+import { getOncologyIntegratedProgramSnapshot } from '../../service/oncology/patient-oncology-summary-service';
 
 const routes = [
   {
-    method: "GET",
-    path: "/etl/patient/{uuid}/oncology/integrated-program",
+    method: 'GET',
+    path: '/etl/patient/{uuid}/oncology/integrated-program',
     config: {
       plugins: {
         hapiAuthorization: {
-          role: privileges.canViewPatient
-        }
+          role: privileges.canViewPatient,
+        },
       },
-      handler: function(request, reply) {
+      handler: function (request, reply) {
         let requestParams = Object.assign({}, request.query, request.params);
         getOncologyIntegratedProgramSnapshot(requestParams)
-          .then(data => {
+          .then((data) => {
             reply(data);
           })
-          .catch(error => {
+          .catch((error) => {
             reply(error);
           });
       },
-      description: "Get the screening and diagnosis history report",
-      notes: "Returns the the screening programs a patient has been through",
-      tags: ["api"],
+      description: 'Get the screening and diagnosis history report',
+      notes: 'Returns the the screening programs a patient has been through',
+      tags: ['api'],
       validate: {
         options: {
-          allowUnknown: true
+          allowUnknown: true,
         },
-        params: {}
-      }
-    }
-  }
+        params: {},
+      },
+    },
+  },
 ];
-exports.routes = server => server.route(routes);
+exports.routes = (server) => server.route(routes);

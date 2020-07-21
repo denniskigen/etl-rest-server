@@ -1,9 +1,8 @@
-
 {
-    "reports": [
-        "prepMonthlySummaryNoDisaggregation",
-        "prepMonthlySummaryPopulationTypeDisaggregation",
-        "prepMonthlySummaryBreastFeedingDisaggregation",
-        "prepMonthlySummaryPregnancyDisaggregation"
-    ]
-} 
+  "reports": [
+    "prepMonthlySummaryNoDisaggregation",
+    "prepMonthlySummaryPopulationTypeDisaggregation",
+    "prepMonthlySummaryBreastFeedingDisaggregation",
+    "prepMonthlySummaryPregnancyDisaggregation"
+  ]
+}

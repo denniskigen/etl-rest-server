@@ -13,7 +13,7 @@ global.Assertion = chai.Assertion;
 global.assert = chai.assert;
 let report;
 let params = {
-  startDate: '2018-01-01'
+  startDate: '2018-01-01',
 };
 
 describe('BaseMysqlReport:', () => {
@@ -26,40 +26,50 @@ describe('BaseMysqlReport:', () => {
 
   it('should generate report', (done) => {
     let reports = {
-      'main': {},
-      'report1': {},
-      'report2': {}
+      main: {},
+      report1: {},
+      report2: {},
     };
     let reportQuery = 'select * from everything';
     let results = {
-      results: []
+      results: [],
     };
-    let fetchReportSchemaStub = sinon.stub(report, 'fetchReportSchema')
+    let fetchReportSchemaStub = sinon
+      .stub(report, 'fetchReportSchema')
       .returns(Promise.resolve(reports));
 
-    let generateReportQueryStub = sinon.stub(report, 'generateReportQuery')
+    let generateReportQueryStub = sinon
+      .stub(report, 'generateReportQuery')
       .returns(Promise.resolve(reportQuery));
 
-    let executeReportQueryStub = sinon.stub(report, 'executeReportQuery')
+    let executeReportQueryStub = sinon
+      .stub(report, 'executeReportQuery')
       .returns(Promise.resolve(results));
 
     report.generateReport().then((generated) => {
       // fetched reports
-      expect(fetchReportSchemaStub.calledWithExactly(report.reportName)).to.be.true;
+      expect(fetchReportSchemaStub.calledWithExactly(report.reportName)).to.be
+        .true;
       expect(report.reportSchemas).to.equal(reports);
 
       // generated report query
-      expect(generateReportQueryStub.calledWithExactly(report.reportSchemas, report.params)).to.be.true;
+      expect(
+        generateReportQueryStub.calledWithExactly(
+          report.reportSchemas,
+          report.params
+        )
+      ).to.be.true;
       expect(report.reportQuery).to.equal(reportQuery);
 
       // execute report query
-      expect(executeReportQueryStub.calledWithExactly(report.reportQuery)).to.be.true;
+      expect(executeReportQueryStub.calledWithExactly(report.reportQuery)).to.be
+        .true;
       expect(report.queryResults).to.equal(results);
 
       expect(generated).to.deep.equal({
         schemas: reports,
         sqlQuery: reportQuery,
-        results: results
+        results: results,
       });
 
       done();
@@ -71,27 +81,25 @@ describe('BaseMysqlReport:', () => {
       generateSQL: () => {
         return {
           toString: () => {
-            return 'select * from everything'
-          }
-        }
-      }
+            return 'select * from everything';
+          },
+        };
+      },
     };
 
-    let getJson2SqlStub = sinon.stub(report, 'getJson2Sql')
-      .returns(jSql);
+    let getJson2SqlStub = sinon.stub(report, 'getJson2Sql').returns(jSql);
 
     let schemas = {};
 
     let params = {
-      startDate: '2018-01-20'
+      startDate: '2018-01-20',
     };
 
-    report.generateReportQuery(schemas, params)
-      .then((sql) => {
-        expect(getJson2SqlStub.calledWithExactly(schemas, params)).to.be.true;
-        expect(sql).to.equal('select * from everything');
-        done();
-      });
+    report.generateReportQuery(schemas, params).then((sql) => {
+      expect(getJson2SqlStub.calledWithExactly(schemas, params)).to.be.true;
+      expect(sql).to.equal('select * from everything');
+      done();
+    });
   });
 
   it('should execute report query', (done) => {
@@ -106,20 +114,17 @@ describe('BaseMysqlReport:', () => {
         } else {
           return Promise.reject('Unknown case');
         }
-      }
+      },
     };
 
-    let getSqlRunnerStub = sinon.stub(report, 'getSqlRunner')
-      .returns(runner);
+    let getSqlRunnerStub = sinon.stub(report, 'getSqlRunner').returns(runner);
 
-    report.executeReportQuery(sqlParam)
-      .then((res) => {
-        expect(getSqlRunnerStub.called).to.be.true;
-        expect(res).to.deep.equal({
-          results: results
-        });
-        done();
+    report.executeReportQuery(sqlParam).then((res) => {
+      expect(getSqlRunnerStub.called).to.be.true;
+      expect(res).to.deep.equal({
+        results: results,
       });
+      done();
+    });
   });
-
 });

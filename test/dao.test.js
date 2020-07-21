@@ -10,7 +10,7 @@ var mockData = require('./mock/mock-data');
 var nock = require('nock');
 var _ = require('underscore');
 var Hapi = require('hapi');
-var fakeServer = require('./sinon-server-1.17.3');
+// var fakeServer = require('./sinon-server-1.17.3');
 
 chai.config.includeStack = true;
 global.expect = chai.expect;
@@ -22,138 +22,134 @@ var baseUrl = 'http://localhost:8002';
 chai.use(sinonChai);
 
 describe('ETL-SERVER TESTS', function () {
+	describe('Testing DAO', function () {
+		// example showing how to use a stub to fake a method
+		var stub;
+		beforeEach(function (done) {
+			stub = sinon.stub(db, 'queryServer_test');
 
-  describe('Testing DAO', function () {
+			// .yieldsTo(1, null, { result:mockData.getPatientMockData() });
+			done();
+		});
 
-    // example showing how to use a stub to fake a method
-    var stub;
-    beforeEach(function (done) {
-      stub = sinon.stub(db, 'queryServer_test');
+		afterEach(function () {
+			stub.restore();
+		});
 
-      // .yieldsTo(1, null, { result:mockData.getPatientMockData() });
-      done();
-    });
+		it('should create the right query parts object when getPatient is called', function (done) {
+			// stub.callsArgWithAsync(1, null, { result:mockData.getPatientMockData() });
+			stub.yields({
+				startIndex: 0,
+				size: 1,
+				result: mockData.getPatientMockData(),
+			});
+			var options = {
+				params: {
+					uuid: '123',
+				},
+				query: {
+					order: null,
+					fields: null,
+					startIndex: null,
+					limit: null,
+				},
+			};
 
-    afterEach(function () {
-      stub.restore();
-    });
+			// stub.withArgsWithAsync(options).yieldsTo(mockData.getPatientMockData());
 
-    it('should create the right query parts object when getPatient is called',
-      function (done) {
-        // stub.callsArgWithAsync(1, null, { result:mockData.getPatientMockData() });
-        stub.yields({
-          startIndex: 0,
-          size: 1,
-          result: mockData.getPatientMockData()
-        });
-        var options = {
-          params: {
-            uuid: '123'
-          },
-          query: {
-            order: null,
-            fields: null,
-            startIndex: null,
-            limit: null
-          }
-        };
+			dao.getPatient(options, function (res) {
+				// console.log('body2  ++', res);
+				done();
+			});
 
-        // stub.withArgsWithAsync(options).yieldsTo(mockData.getPatientMockData());
+			// console.log('body2  ++', stub.args[0][0]);
+			var queryParts = stub.args[0][0];
+			//get patient always fetched data from etl.flat_hiv_summary
+			expect(queryParts.table).to.equal('etl.flat_hiv_summary');
+			// if fields is null output all columns
+			expect(queryParts.columns).to.equal('*');
 
-        dao.getPatient(options, function (res) {
-          // console.log('body2  ++', res);
-          done();
-        });
+			expect(queryParts.where).to.include(options.params.uuid);
+		});
 
-        // console.log('body2  ++', stub.args[0][0]);
-        var queryParts = stub.args[0][0];
-        //get patient always fetched data from etl.flat_hiv_summary
-        expect(queryParts.table).to.equal('etl.flat_hiv_summary');
-        // if fields is null output all columns
-        expect(queryParts.columns).to.equal('*');
+		it('should create the right fields property when getPatient is called', function (done) {
+			// stub.callsArgWithAsync(1, null, { result:mockData.getPatientMockData() });
+			stub.yields({
+				startIndex: 0,
+				size: 1,
+				result: mockData.getPatientMockData(),
+			});
+			var options = {
+				params: {
+					uuid: '124',
+				},
+				query: {
+					order: null,
+					fields: ['a', 'b', 'c'],
+					startIndex: null,
+					limit: null,
+				},
+			};
 
-        expect(queryParts.where).to.include(options.params.uuid);
-      });
+			dao.getPatient(options, function (res) {
+				// console.log('bodyxx  ++', res);
+				done();
+			});
 
-    it('should create the right fields property when getPatient is called',
-      function (done) {
-        // stub.callsArgWithAsync(1, null, { result:mockData.getPatientMockData() });
-        stub.yields({
-          startIndex: 0,
-          size: 1,
-          result: mockData.getPatientMockData()
-        });
-        var options = {
-          params: {
-            uuid: '124'
-          },
-          query: {
-            order: null,
-            fields: ['a', 'b', 'c'],
-            startIndex: null,
-            limit: null
-          }
-        };
+			// console.log('bodyxx  ++', stub.args[0][0]);
+			var queryParts = stub.args[0][0];
 
-        dao.getPatient(options, function (res) {
-          // console.log('bodyxx  ++', res);
-          done();
-        });
+			expect(queryParts.columns).to.be.an('array');
+			expect(queryParts.columns).to.include('a');
+			expect(queryParts.columns).to.include('b');
+			expect(queryParts.columns).to.include('c');
+		});
+	});
 
-        // console.log('bodyxx  ++', stub.args[0][0]);
-        var queryParts = stub.args[0][0];
+	// describe('Tests for /etl/custom_data Endpoint', function() {
+	//   var stub;
+	//   beforeEach(function() {
+	//     stub = sinon.stub(dao, 'getCustomData'); //.returns({ one: 'fakeOne' });
+	//   });
+	//
+	//   afterEach(function() {
+	//     stub.restore();
+	//   });
+	//
+	//   it('should have route /etl/custom_data/{userParams*3}', function(done) {
+	//     var table = server.table();
+	//     var url = '/etl/custom_data/{userParams*3}';
+	//     var path = null;
+	//     _.each(table, function(r) { // console.log(r.table);
+	//       _.each(r.table, function(p) {
+	//         if (p.path === url) path = p.path;
+	//       });
+	//     });
+	//
+	//     expect(path).to.equal(url);
+	//     done();
+	//   });
+	// });
 
-        expect(queryParts.columns).to.be.an('array');
-        expect(queryParts.columns).to.include('a');
-        expect(queryParts.columns).to.include('b');
-        expect(queryParts.columns).to.include('c');
-      });
-  });
-
-  // describe('Tests for /etl/custom_data Endpoint', function() {
-  //   var stub;
-  //   beforeEach(function() {
-  //     stub = sinon.stub(dao, 'getCustomData'); //.returns({ one: 'fakeOne' });
-  //   });
-  //
-  //   afterEach(function() {
-  //     stub.restore();
-  //   });
-  //
-  //   it('should have route /etl/custom_data/{userParams*3}', function(done) {
-  //     var table = server.table();
-  //     var url = '/etl/custom_data/{userParams*3}';
-  //     var path = null;
-  //     _.each(table, function(r) { // console.log(r.table);
-  //       _.each(r.table, function(p) {
-  //         if (p.path === url) path = p.path;
-  //       });
-  //     });
-  //
-  //     expect(path).to.equal(url);
-  //     done();
-  //   });
-  // });
-
-  // describe('Test the Main End Point /', function() {
-  //   it('returns status code 200', function(done) {
-  //     // console.info('passed here');
-  //     request.get(baseUrl, function(error, response, body) {
-  //       console.log(body);
-  //       expect(response.statusCode).equal(200);
-  //       done();
-  //     });
-  //   });
-  //
-  //   it('returns Hello, World', function(done) {
-  //     console.info('passed here');
-  //     request.get(baseUrl, function(error, response, body) {
-  //       console.log(body);
-  //       expect(body).to.equal('Hello, World! HAPI Demo Server');
-  //       done();
-  //     });
-  //
-  //     // assert.equal(200, response.statusCode);
-  //   });
-  // });
+	// describe('Test the Main End Point /', function() {
+	//   it('returns status code 200', function(done) {
+	//     // console.info('passed here');
+	//     request.get(baseUrl, function(error, response, body) {
+	//       console.log(body);
+	//       expect(response.statusCode).equal(200);
+	//       done();
+	//     });
+	//   });
+	//
+	//   it('returns Hello, World', function(done) {
+	//     console.info('passed here');
+	//     request.get(baseUrl, function(error, response, body) {
+	//       console.log(body);
+	//       expect(body).to.equal('Hello, World! HAPI Demo Server');
+	//       done();
+	//     });
+	//
+	//     // assert.equal(200, response.statusCode);
+	//   });
+	// });
 });

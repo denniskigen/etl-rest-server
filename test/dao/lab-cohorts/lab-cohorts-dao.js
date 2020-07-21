@@ -18,48 +18,44 @@ global.assert = chai.assert;
 chai.use(sinonChai);
 
 describe('LAB COHORTS ETL-SERVER TESTS', function () {
+	describe('Testing etl-dao layer', function () {
+		// example showing how to use a stub to fake a method
+		var stub;
+		beforeEach(function (done) {
+			stub = sinon.stub(db, 'queryDb');
+			this.request = sinon.stub(http, 'request');
+			// .yieldsTo(1, null, { result:mockData.getPatientMockData() });
+			done();
+		});
 
-  describe('Testing etl-dao layer', function () {
+		afterEach(function () {
+			http.request.restore();
+			stub.restore();
+		});
 
-    // example showing how to use a stub to fake a method
-    var stub;
-    beforeEach(function (done) {
-      stub = sinon.stub(db, 'queryDb');
-      this.request = sinon.stub(http, 'request');
-      // .yieldsTo(1, null, { result:mockData.getPatientMockData() });
-      done();
-    });
+		it('should create the right query parts object when loadLabCohorts is called', function (done) {
+			stub.resolves({
+				startIndex: 0,
+				size: 1,
+				result: [],
+			});
+			var options = {
+				query: {
+					startDate: '2016-01-08',
+					endDate: '2016-08-08',
+					limit: 10000,
+					offset: 0,
+				},
+			};
 
-    afterEach(function () {
-      http.request.restore();
-      stub.restore();
-    });
+			dao.loadLabCohorts(options, function (res) {
+				done();
+			});
 
-    it('should create the right query parts object when loadLabCohorts is called',
-      function (done) {
-
-        stub.resolves({
-          startIndex: 0,
-          size: 1,
-          result: []
-        });
-        var options = {
-          query: {
-            startDate: '2016-01-08',
-            endDate: '2016-08-08',
-            limit: 10000,
-            offset: 0
-          }
-        };
-
-        dao.loadLabCohorts(options, function (res) {
-          done();
-        });
-
-        var queryParts = stub.args[0][0];
-        expect(queryParts.table).to.equal('amrs.patient');
-        expect(queryParts.columns[0]).to.equal('distinct pe.uuid');
-        expect(queryParts.limit).to.equal(10000); //max limit
-      });
-  });
+			var queryParts = stub.args[0][0];
+			expect(queryParts.table).to.equal('amrs.patient');
+			expect(queryParts.columns[0]).to.equal('distinct pe.uuid');
+			expect(queryParts.limit).to.equal(10000); //max limit
+		});
+	});
 });
